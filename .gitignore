@@ -1,0 +1,16 @@
+# 环境变量（含 API Key）
+.env
+
+# 构建产物
+moying/target/
+moying-web/node_modules/
+moying-web/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# 系统文件
+.DS_Store
+Thumbs.db
