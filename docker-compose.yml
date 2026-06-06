@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: moying-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: moying123
+      MYSQL_DATABASE: moying
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  moying:
+    build:
+      context: ./moying
+      dockerfile: Dockerfile
+    container_name: moying-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/moying?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: moying123
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+    ports:
+      - "8080:8080"
+
+  moying-web:
+    build:
+      context: ./moying-web
+      dockerfile: Dockerfile
+    container_name: moying-frontend
+    restart: unless-stopped
+    depends_on:
+      - moying
+    ports:
+      - "3000:80"
+
+volumes:
+  mysql_data:
