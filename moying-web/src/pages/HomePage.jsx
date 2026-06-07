@@ -72,7 +72,7 @@ export default function HomePage({ setLoading, showMessage }) {
                         <div key={sp.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#fafafa', borderRadius: 8, cursor: 'pointer' }} onClick={() => navigate(`/screenplay/${sp.id}`)}>
                           <div>
                             <span style={{ fontWeight: 600, fontSize: 14 }}>{sp.title}</span>
-                            <span style={{ marginLeft: 10, fontSize: 12, color: '#888' }}>v{sp.version} · {sp.sourceChapters || '全章'} · {(sp.scenes || []).length} 场景</span>
+                            <span style={{ marginLeft: 10, fontSize: 12, color: '#888' }}>v{sp.version} · {sp.sourceChapters ? sp.sourceChapters + ' · ' : ''}{(sp.scenes || []).length} 场景</span>
                           </div>
                           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                             {statusBadge(sp.status)}

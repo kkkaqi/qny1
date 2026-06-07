@@ -24,8 +24,9 @@ export default function ImportNovelPage({ setLoading, showMessage }) {
     setLoading(true);
     try {
       let tid = novelId;
+      let prevCount = novel ? novel.totalChapters : 0;
       if (mode === 'new') { const res = await importNovel({ title: title.trim(), author: author.trim(), summary: summary.trim(), chapters: filled.map(c => ({ title: c.title.trim(), content: c.content.trim() })) }); tid = res.data.id; showMessage('小说导入成功'); }
-      else { await addChapters(tid, filled.map(c => ({ title: c.title.trim(), content: c.content.trim() }))); showMessage('章节追加成功'); }
+      else { const res = await addChapters(tid, filled.map(c => ({ title: c.title.trim(), content: c.content.trim() }))); prevCount = res.data.totalChapters - filled.length; showMessage('章节追加成功'); }
       if (convertAfterImport) { const res = await convertToScreenplay(tid, { novelId: tid, mode: 'AI', customInstruction: customInstruction.trim() || null }); showMessage('AI 剧本转换完成！'); navigate(`/screenplay/${res.data.id}`); }
       else { navigate('/'); }
     } catch (e) { showMessage(e.message, 'error'); } finally { setLoading(false); }

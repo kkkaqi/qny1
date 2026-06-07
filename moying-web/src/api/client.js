@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const client = axios.create({
   baseURL: '/api',
-  timeout: 120000,
+  timeout: 300000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -26,3 +26,10 @@ export const updateScreenplay = (id, params) => client.put(`/screenplays/${id}`,
 export const updateScene = (screenplayId, sceneId, data) => client.put(`/screenplays/${screenplayId}/scenes/${sceneId}`, data);
 export const exportYaml = (id) => client.get(`/screenplays/${id}/export`, { responseType: 'text' });
 export const deleteScreenplay = (id) => client.delete(`/screenplays/${id}`);
+export const addScene = (spId) => client.post(`/screenplays/${spId}/scenes`);
+export const deleteScene = (spId, scId) => client.delete(`/screenplays/${spId}/scenes/${scId}`);
+export const addDialogue = (spId, scId, data) => client.post(`/screenplays/${spId}/scenes/${scId}/dialogues`, data);
+export const deleteDialogueApi = (spId, dId) => client.delete(`/screenplays/${spId}/dialogues/${dId}`);
+export const addActionApi = (spId, scId, data) => client.post(`/screenplays/${spId}/scenes/${scId}/actions`, data);
+export const deleteActionApi = (spId, aId) => client.delete(`/screenplays/${spId}/actions/${aId}`);
+export const updateCharacter = (spId, chId, data) => client.put(`/screenplays/${spId}/characters/${chId}`, data);

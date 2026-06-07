@@ -63,19 +63,28 @@ public class ConversionService {
             """;
 
     public ScreenplayDTO convertNovelToScreenplay(Novel novel, List<Integer> chapterNumbers, String customInstruction) {
-        List<Chapter> targetChapters = novel.getChapters().stream()
-                .filter(c -> chapterNumbers == null || chapterNumbers.isEmpty() || chapterNumbers.contains(c.getChapterNumber()))
+        List<Chapter> allChapters = novel.getChapters().stream()
                 .sorted(Comparator.comparing(Chapter::getChapterNumber))
+                .collect(Collectors.toList());
+        List<Integer> effectiveNums = (chapterNumbers == null || chapterNumbers.isEmpty())
+                ? allChapters.stream().map(Chapter::getChapterNumber).collect(Collectors.toList())
+                : chapterNumbers;
+        List<Chapter> targetChapters = allChapters.stream()
+                .filter(c -> effectiveNums.contains(c.getChapterNumber()))
                 .collect(Collectors.toList());
         if (targetChapters.size() < 3) throw new IllegalArgumentException("至少需要 3 个章节，当前仅 " + targetChapters.size() + " 个");
         String novelText = buildNovelText(targetChapters);
         try {
             String yamlOutput = callAiModel(novelText, novel.getTitle(), customInstruction);
             log.info("AI 转换完成，YAML {} 字符", yamlOutput.length());
-            return yamlService.parseYamlToScreenplayDTO(yamlOutput, novel.getId());
+            ScreenplayDTO dto = yamlService.parseYamlToScreenplayDTO(yamlOutput, novel.getId());
+            dto.setSourceChapters(formatChapterRange(effectiveNums));
+            return dto;
         } catch (Exception e) {
             log.error("AI 转换失败，回退规则引擎", e);
-            return fallbackRuleBasedConversion(targetChapters, novel);
+            ScreenplayDTO fdto = fallbackRuleBasedConversion(targetChapters, novel);
+            fdto.setSourceChapters(formatChapterRange(effectiveNums));
+            return fdto;
         }
     }
 
@@ -110,7 +119,8 @@ public class ConversionService {
                 sceneDTOs.add(ScreenplayDTO.SceneDTO.builder().sceneNumber(sc).title("第" + ch.getChapterNumber() + "章 场景" + sc).setting("INT").location("待确认").timeOfDay("DAY").summary(truncate(p, 200)).dialogues(ds).actions(as).characterList(String.join(",", known)).build());
             }
         }
-        dto.setScenes(sceneDTOs); dto.setCharacters(charDTOs); return dto;
+        dto.setScenes(sceneDTOs); dto.setCharacters(charDTOs);
+        dto.setSourceChapters(formatChapterRange(chapters.stream().map(Chapter::getChapterNumber).collect(Collectors.toList()))); return dto;
     }
 
     private List<ScreenplayDTO.DialogueDTO> extractDialogues(String p, Set<String> kc, List<ScreenplayDTO.CharacterDTO> cds) {
@@ -144,4 +154,11 @@ public class ConversionService {
     }
 
     private String truncate(String t, int m) { return t.length() > m ? t.substring(0, m) + "..." : t; }
+
+    private String formatChapterRange(List<Integer> nums) {
+        if (nums == null || nums.isEmpty()) return "全章";
+        int min = nums.stream().min(Integer::compareTo).orElse(0);
+        int max = nums.stream().max(Integer::compareTo).orElse(0);
+        return min == max ? "第" + min + "章" : "第" + min + "-" + max + "章";
+    }
 }

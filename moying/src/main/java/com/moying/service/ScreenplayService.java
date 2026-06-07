@@ -20,6 +20,9 @@ public class ScreenplayService {
     private final NovelRepository novelRepo;
     private final ConversionService conversionService;
     private final YamlService yamlService;
+    private final DialogueRepository dialogueRepo;
+    private final ActionRepository actionRepo;
+    private final CharacterRepository characterRepo;
 
     public ScreenplayDTO convert(ConversionRequest req) {
         Novel n = novelRepo.findById(req.getNovelId()).orElseThrow(() -> new EntityNotFoundException("小说不存在: " + req.getNovelId()));
@@ -63,11 +66,96 @@ public class ScreenplayService {
         return sp;
     }
 
+    /** 更新角色信息 */
+    public ScreenplayDTO updateCharacter(Long screenplayId, Long characterId, String name, String description, String traits, String characterType) {
+        com.moying.entity.Character ch = characterRepo.findById(characterId)
+                .orElseThrow(() -> new EntityNotFoundException("角色不存在: " + characterId));
+        if (name != null) ch.setName(name);
+        if (description != null) ch.setDescription(description);
+        if (traits != null) ch.setTraits(traits);
+        if (characterType != null) ch.setCharacterType(characterType);
+        characterRepo.save(ch);
+        refreshYaml(screenplayId);
+        return getById(screenplayId);
+    }
+
     public void deleteScreenplay(Long id) {
         if (!screenplayRepo.existsById(id)) {
             throw new EntityNotFoundException("剧本不存在: " + id);
         }
         screenplayRepo.deleteById(id);
+    }
+
+    /** 添加新场景 */
+    public ScreenplayDTO addScene(Long screenplayId) {
+        Screenplay sp = screenplayRepo.findById(screenplayId)
+                .orElseThrow(() -> new EntityNotFoundException("剧本不存在: " + screenplayId));
+        int nextNum = sp.getScenes().stream().mapToInt(Scene::getSceneNumber).max().orElse(0) + 1;
+        Scene scene = Scene.builder().screenplay(sp).sceneNumber(nextNum)
+                .setting("INT").location("").timeOfDay("DAY").build();
+        sp.addScene(scene);
+        screenplayRepo.save(sp);
+        refreshYaml(screenplayId);
+        return getById(screenplayId);
+    }
+
+    /** 删除场景 */
+    public ScreenplayDTO deleteScene(Long screenplayId, Long sceneId) {
+        Screenplay sp = screenplayRepo.findById(screenplayId)
+                .orElseThrow(() -> new EntityNotFoundException("剧本不存在: " + screenplayId));
+        Scene scene = sceneRepo.findById(sceneId)
+                .orElseThrow(() -> new EntityNotFoundException("场景不存在: " + sceneId));
+        sp.getScenes().remove(scene);
+        screenplayRepo.save(sp);
+        refreshYaml(screenplayId);
+        return getById(screenplayId);
+    }
+
+    /** 添加对白 */
+    public ScreenplayDTO addDialogue(Long screenplayId, Long sceneId, String characterName, String text, String direction) {
+        Scene scene = sceneRepo.findById(sceneId)
+                .orElseThrow(() -> new EntityNotFoundException("场景不存在: " + sceneId));
+        int seq = scene.getDialogues().stream().mapToInt(Dialogue::getSequence).max().orElse(-1) + 1;
+        Dialogue d = Dialogue.builder().scene(scene).characterName(characterName).text(text)
+                .direction(direction).sequence(seq).build();
+        scene.addDialogue(d);
+        sceneRepo.save(scene);
+        refreshYaml(screenplayId);
+        return getById(screenplayId);
+    }
+
+    /** 删除对白 */
+    public ScreenplayDTO deleteDialogue(Long screenplayId, Long dialogueId) {
+        Dialogue dialogue = dialogueRepo.findById(dialogueId)
+                .orElseThrow(() -> new EntityNotFoundException("对白不存在: " + dialogueId));
+        Scene scene = dialogue.getScene();
+        scene.getDialogues().remove(dialogue);
+        dialogueRepo.delete(dialogue);
+        refreshYaml(screenplayId);
+        return getById(screenplayId);
+    }
+
+    /** 添加动作 */
+    public ScreenplayDTO addAction(Long screenplayId, Long sceneId, String description) {
+        Scene scene = sceneRepo.findById(sceneId)
+                .orElseThrow(() -> new EntityNotFoundException("场景不存在: " + sceneId));
+        int seq = scene.getActions().stream().mapToInt(Action::getSequence).max().orElse(-1) + 1;
+        Action a = Action.builder().scene(scene).description(description).sequence(seq).build();
+        scene.addAction(a);
+        sceneRepo.save(scene);
+        refreshYaml(screenplayId);
+        return getById(screenplayId);
+    }
+
+    /** 删除动作 */
+    public ScreenplayDTO deleteAction(Long screenplayId, Long actionId) {
+        Action action = actionRepo.findById(actionId)
+                .orElseThrow(() -> new EntityNotFoundException("动作不存在: " + actionId));
+        Scene scene = action.getScene();
+        scene.getActions().remove(action);
+        actionRepo.delete(action);
+        refreshYaml(screenplayId);
+        return getById(screenplayId);
     }
 
     private Screenplay dtoToEntity(ScreenplayDTO dto, Novel n) {

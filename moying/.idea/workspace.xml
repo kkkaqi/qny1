@@ -5,9 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="98b8dc8c-e639-45d5-8492-7ca4aa413c88" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../moying-web/src/api/client.js" beforeDir="false" afterPath="$PROJECT_DIR$/../moying-web/src/api/client.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../moying-web/src/pages/ScreenplayEditorPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../moying-web/src/pages/ScreenplayEditorPage.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moying/controller/ScreenplayController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moying/controller/ScreenplayController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moying/service/ConversionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moying/service/ConversionService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moying/service/ScreenplayService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moying/service/ScreenplayService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moying/service/YamlService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moying/service/YamlService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/moying/controller/ScreenplayController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/moying/controller/ScreenplayController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/moying/service/ScreenplayService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/moying/service/ScreenplayService.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,6 +51,7 @@
     "RequestMappingsPanelWidth0": "75",
     "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.MoyingApplication.executor": "Run",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
@@ -82,7 +90,8 @@
       <option name="presentableId" value="Default" />
       <updated>1754277452241</updated>
       <workItem from="1780740381713" duration="570000" />
-      <workItem from="1780741131202" duration="3461000" />
+      <workItem from="1780741131202" duration="5339000" />
+      <workItem from="1780806485793" duration="4866000" />
     </task>
     <servers />
   </component>
