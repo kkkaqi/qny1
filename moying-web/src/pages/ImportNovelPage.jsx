@@ -13,6 +13,29 @@ export default function ImportNovelPage({ setLoading, showMessage }) {
 
   useEffect(() => { if (novelId) loadNovel(); }, [novelId]);
   const loadNovel = async () => { try { const res = await getNovel(novelId); setNovel(res.data); setTitle(res.data.title); setAuthor(res.data.author || ''); setSummary(res.data.summary || ''); } catch (e) { showMessage(e.message, 'error'); } };
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target.result;
+      // 按章节标题拆分：匹配 "第X章" 或 "第X章：标题" 或 "**第X章：标题**"
+      const chapterRegex = /(?:^|\n)\s*(?:\*{0,2})\s*第\s*([一二三四五六七八九十\d]+)\s*章\s*[：:]?\s*([^\n]*)/g;
+      const matches = [...text.matchAll(chapterRegex)];
+      if (matches.length < 3) { showMessage('未检测到至少 3 个章节，请确认 txt 中包含"第X章"标识', 'error'); return; }
+      const parsed = [];
+      for (let i = 0; i < matches.length; i++) {
+        const start = matches[i].index + matches[i][0].length;
+        const end = i + 1 < matches.length ? matches[i + 1].index : text.length;
+        const title = (matches[i][2] || '').trim() || `第${matches[i][1]}章`;
+        const content = text.slice(start, end).trim();
+        if (content.length > 20) parsed.push({ title, content });
+      }
+      if (parsed.length >= 3) { setChapters(parsed); showMessage(`已识别 ${parsed.length} 个章节`); }
+      else { showMessage('章节内容不足，请检查格式', 'error'); }
+    };
+    reader.readAsText(file, 'UTF-8');
+  };
   const addChapter = () => setChapters([...chapters, { title: '', content: '' }]);
   const removeChapter = (idx) => { if (chapters.length <= 3) { showMessage('至少需要保留 3 个章节', 'error'); return; } setChapters(chapters.filter((_, i) => i !== idx)); };
   const updateChapter = (idx, field, value) => { const updated = [...chapters]; updated[idx] = { ...updated[idx], [field]: value }; setChapters(updated); };
@@ -52,7 +75,13 @@ export default function ImportNovelPage({ setLoading, showMessage }) {
       <div style={cs}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h3 style={{ fontSize: 16, fontWeight: 600 }}>章节内容（至少 3 章）</h3>
-          <button onClick={addChapter} style={{ background: '#e3f2fd', border: 'none', color: '#1976d2', padding: '6px 14px', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>+ 添加章节</button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={addChapter} style={{ background: '#e3f2fd', border: 'none', color: '#1976d2', padding: '6px 14px', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>+ 添加章节</button>
+            <label style={{ background: '#fff3e0', border: 'none', color: '#e65100', padding: '6px 14px', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>
+              📄 导入 txt
+              <input type="file" accept=".txt" onChange={handleFileUpload} style={{ display: 'none' }} />
+            </label>
+          </div>
         </div>
         {chapters.map((ch, idx) => (
           <div key={idx} style={{ border: '1px solid #e0e0e0', borderRadius: 8, padding: 16, marginBottom: 12, background: '#fafafa' }}>

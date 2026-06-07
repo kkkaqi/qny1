@@ -91,11 +91,18 @@ export default function ScreenplayEditorPage({ setLoading, showMessage }) {
           ))}
           {activeTab === 'characters' && <CharactersTab characters={screenplay.characters || []} onUpdate={handleUpdateCharacter} />}
           {activeTab === 'yaml' && <pre style={{ background: '#1a1a2e', color: '#e0e0e0', padding: 20, borderRadius: 8, fontSize: 13, lineHeight: 1.6, overflowX: 'auto', whiteSpace: 'pre-wrap', fontFamily: "'Fira Code', Consolas, monospace" }}>{screenplay.yamlContent || '暂无 YAML 内容'}</pre>}
-          {activeTab === 'source' && (
+          {activeTab === 'source' && (() => {
+              // 按 sourceChapters 筛选：解析 "第1-3章" 或 "第4章" 格式
+              const sc = screenplay.sourceChapters || '';
+              const nums = (sc.match(/\d+/g) || []).map(Number);
+              const min = nums.length >= 1 ? nums[0] : 1;
+              const max = nums.length >= 2 ? nums[1] : (nums[0] || 999);
+              const filtered = (novel?.chapters || []).filter(ch => ch.chapterNumber >= min && ch.chapterNumber <= max);
+              return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {!novel ? <p style={{ color: '#999', textAlign: 'center', padding: 20 }}>加载中...</p>
-              : (novel.chapters || []).length === 0 ? <p style={{ color: '#999', textAlign: 'center', padding: 20 }}>暂无原文</p>
-              : (novel.chapters || []).map(ch => (
+              : filtered.length === 0 ? <p style={{ color: '#999', textAlign: 'center', padding: 20 }}>暂无原文</p>
+              : filtered.map(ch => (
                 <div key={ch.id} style={{ border: '1px solid #e8e8e8', borderRadius: 8, overflow: 'hidden' }}>
                   <div style={{ background: '#f5f5f5', padding: '10px 16px', fontWeight: 600, fontSize: 14, borderBottom: '1px solid #e8e8e8' }}>
                     第 {ch.chapterNumber} 章：{ch.title}
@@ -105,7 +112,7 @@ export default function ScreenplayEditorPage({ setLoading, showMessage }) {
                 </div>
               ))
             }</div>
-          )}
+          ); })()}
         </div>
       </div>
     </div>
